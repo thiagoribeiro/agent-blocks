@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Log stream plugin view",
+  "type": "object",
+  "required": [
+    "title",
+    "status",
+    "lines"
+  ],
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "open",
+        "loading",
+        "complete",
+        "failed"
+      ]
+    },
+    "lines": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "timestamp",
+          "message"
+        ],
+        "properties": {
+          "timestamp": {
+            "type": "string"
+          },
+          "level": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "has_more": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": true
+}

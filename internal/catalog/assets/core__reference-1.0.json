@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Reference block",
+  "type": "object",
+  "required": [
+    "type",
+    "title"
+  ],
+  "properties": {
+    "type": {
+      "const": "reference"
+    },
+    "block_id": {
+      "type": "string"
+    },
+    "refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "room_id": {
+      "type": "string"
+    },
+    "uri": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

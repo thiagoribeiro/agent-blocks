@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Memory card plugin view",
+  "type": "object",
+  "required": [
+    "title",
+    "status",
+    "memory"
+  ],
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "confirmed",
+        "rejected",
+        "deleted",
+        "edited"
+      ]
+    },
+    "memory": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}

@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Audio block",
+  "type": "object",
+  "required": [
+    "type",
+    "url"
+  ],
+  "properties": {
+    "type": {
+      "const": "audio"
+    },
+    "block_id": {
+      "type": "string"
+    },
+    "refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "url": {
+      "type": "string"
+    },
+    "mime_type": {
+      "type": "string"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "transcript": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

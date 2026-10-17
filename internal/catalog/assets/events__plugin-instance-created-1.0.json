@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Plugin instance created event content",
+  "type": "object",
+  "required": [
+    "plugin",
+    "instance_id",
+    "state",
+    "view"
+  ],
+  "properties": {
+    "plugin": {
+      "type": "string"
+    },
+    "instance_id": {
+      "type": "string"
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "view": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Surface user pinned event content",
+  "type": "object",
+  "required": [
+    "surface"
+  ],
+  "properties": {
+    "surface": {
+      "enum": [
+        "pinned"
+      ]
+    },
+    "plugin": {
+      "type": "string"
+    },
+    "instance_id": {
+      "type": "string"
+    },
+    "block_id": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

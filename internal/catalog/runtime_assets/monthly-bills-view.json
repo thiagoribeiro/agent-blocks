@@ -1,0 +1,83 @@
+{
+  "type": "object",
+  "required": [
+    "title",
+    "owner_id",
+    "revision",
+    "status",
+    "currency",
+    "timezone",
+    "items",
+    "periods",
+    "selected_period"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "owner_id": {
+      "type": "string"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "status": {
+      "enum": [
+        "open",
+        "archived"
+      ]
+    },
+    "currency": {
+      "const": "BRL"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "items": {
+      "type": "array",
+      "maxItems": 100,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "due_day",
+          "active"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "due_day": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 31
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "group": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 80
+          }
+        }
+      }
+    },
+    "periods": {
+      "type": "object"
+    },
+    "selected_period": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

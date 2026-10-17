@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Active item projection",
+  "type": "object",
+  "required": [
+    "room_id",
+    "user_id",
+    "source_event_id",
+    "updated_at"
+  ],
+  "properties": {
+    "room_id": {
+      "type": "string"
+    },
+    "user_id": {
+      "type": "string"
+    },
+    "plugin": {
+      "type": "string"
+    },
+    "instance_id": {
+      "type": "string"
+    },
+    "block_id": {
+      "type": "string"
+    },
+    "source_event_id": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "priority": {
+      "enum": [
+        "low",
+        "normal",
+        "high",
+        "urgent"
+      ]
+    },
+    "auto_pinned": {
+      "type": "boolean"
+    },
+    "user_pinned": {
+      "type": "boolean"
+    },
+    "dismissed_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

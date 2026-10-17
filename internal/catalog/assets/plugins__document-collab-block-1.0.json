@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Document collaboration plugin view",
+  "type": "object",
+  "required": [
+    "title",
+    "status",
+    "content"
+  ],
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "editing",
+        "saved",
+        "archived"
+      ]
+    },
+    "content": {
+      "type": "string"
+    },
+    "format": {
+      "enum": [
+        "markdown",
+        "plain_text"
+      ]
+    },
+    "version": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": true
+}

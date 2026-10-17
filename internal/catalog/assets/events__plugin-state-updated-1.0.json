@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Plugin state updated event content",
+  "type": "object",
+  "required": [
+    "plugin",
+    "instance_id",
+    "state"
+  ],
+  "properties": {
+    "plugin": {
+      "type": "string"
+    },
+    "instance_id": {
+      "type": "string"
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "view": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "command_event_id": {
+      "type": "string"
+    },
+    "delegation": {
+      "type": "object",
+      "required": [
+        "agent_id",
+        "requester_id",
+        "request_event_id",
+        "request_room_seq"
+      ],
+      "properties": {
+        "agent_id": {
+          "type": "string"
+        },
+        "requester_id": {
+          "type": "string"
+        },
+        "request_event_id": {
+          "type": "string"
+        },
+        "request_room_seq": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

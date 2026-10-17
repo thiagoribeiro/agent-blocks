@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Chart block view",
+  "type": "object",
+  "required": [
+    "chart_type",
+    "series"
+  ],
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "chart_type": {
+      "enum": [
+        "line",
+        "bar",
+        "pie",
+        "area",
+        "scatter",
+        "metric"
+      ]
+    },
+    "series": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "name",
+          "points"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": true
+            }
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "x_axis": {
+      "type": "string"
+    },
+    "y_axis": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

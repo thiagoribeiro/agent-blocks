@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BRIAN plugin block envelope",
+  "type": "object",
+  "required": [
+    "type",
+    "plugin",
+    "version",
+    "schema_version",
+    "instance_id",
+    "view",
+    "fallback_markdown"
+  ],
+  "properties": {
+    "type": {
+      "const": "plugin"
+    },
+    "block_id": {
+      "type": "string"
+    },
+    "plugin": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "instance_id": {
+      "type": "string"
+    },
+    "view": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "fallback_markdown": {
+      "type": "string",
+      "minLength": 1
+    },
+    "refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "surface": {
+      "$ref": "../core/surface-1.0.json"
+    }
+  },
+  "additionalProperties": false
+}

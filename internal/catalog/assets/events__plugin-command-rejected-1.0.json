@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Rejected plugin command",
+  "type": "object",
+  "required": [
+    "plugin",
+    "instance_id",
+    "command_event_id",
+    "reason"
+  ],
+  "properties": {
+    "plugin": {
+      "type": "string"
+    },
+    "instance_id": {
+      "type": "string"
+    },
+    "command_event_id": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "delegation": {
+      "type": "object",
+      "required": [
+        "agent_id",
+        "requester_id",
+        "request_event_id",
+        "request_room_seq"
+      ],
+      "properties": {
+        "agent_id": {
+          "type": "string"
+        },
+        "requester_id": {
+          "type": "string"
+        },
+        "request_event_id": {
+          "type": "string"
+        },
+        "request_room_seq": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

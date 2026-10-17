@@ -1,0 +1,29 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: brian
+          POSTGRES_PASSWORD: brian
+          POSTGRES_DB: brian_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U brian" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      BRIAN_TEST_DSN: postgres://brian:brian@localhost:5432/brian_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: test -z "$(gofmt -l .)"
+      - run: go build ./...
+      - run: go vet ./...
+      - run: go test -race -count=1 ./...

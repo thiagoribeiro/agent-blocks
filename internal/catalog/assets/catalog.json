@@ -1,0 +1,776 @@
+{
+  "version": "1.0",
+  "core_blocks": [
+    {
+      "type": "markdown",
+      "description": "Safe Markdown text block.",
+      "stateful": false,
+      "schema_ref": "schemas/core/markdown-1.0.json",
+      "status": "experimental",
+      "surfaces": {
+        "default": "timeline",
+        "supports_user_pin": false,
+        "supports_focus_view": false
+      },
+      "version": "1.0",
+      "purpose": "Safe Markdown text block.",
+      "when_to_use": "Safe Markdown text block.",
+      "state_ownership": "none",
+      "fallback_rules": "Render safe text; do not execute unsupported actions."
+    },
+    {
+      "type": "notice",
+      "description": "Highlighted info/warning/success/error message.",
+      "stateful": false,
+      "schema_ref": "schemas/core/notice-1.0.json",
+      "status": "experimental",
+      "surfaces": {
+        "default": "timeline",
+        "supports_user_pin": true,
+        "supports_focus_view": false
+      },
+      "version": "1.0",
+      "purpose": "Highlighted info/warning/success/error message.",
+      "when_to_use": "Highlighted info/warning/success/error message.",
+      "state_ownership": "none",
+      "fallback_rules": "Render safe text; do not execute unsupported actions."
+    },
+    {
+      "type": "image",
+      "description": "Image block referencing transport-owned media.",
+      "stateful": false,
+      "schema_ref": "schemas/core/image-1.0.json",
+      "status": "experimental",
+      "surfaces": {
+        "default": "timeline",
+        "secondary_surfaces": [
+          "media"
+        ],
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "version": "1.0",
+      "purpose": "Image block referencing transport-owned media.",
+      "when_to_use": "Image block referencing transport-owned media.",
+      "state_ownership": "none",
+      "fallback_rules": "Render safe text; do not execute unsupported actions."
+    },
+    {
+      "type": "audio",
+      "description": "Audio block with optional transcript.",
+      "stateful": false,
+      "schema_ref": "schemas/core/audio-1.0.json",
+      "status": "experimental",
+      "surfaces": {
+        "default": "timeline",
+        "secondary_surfaces": [
+          "media"
+        ],
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "version": "1.0",
+      "purpose": "Audio block with optional transcript.",
+      "when_to_use": "Audio block with optional transcript.",
+      "state_ownership": "none",
+      "fallback_rules": "Render safe text; do not execute unsupported actions."
+    },
+    {
+      "type": "file",
+      "description": "Generic file attachment block.",
+      "stateful": false,
+      "schema_ref": "schemas/core/file-1.0.json",
+      "status": "experimental",
+      "surfaces": {
+        "default": "timeline",
+        "secondary_surfaces": [
+          "files"
+        ],
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "version": "1.0",
+      "purpose": "Generic file attachment block.",
+      "when_to_use": "Generic file attachment block.",
+      "state_ownership": "none",
+      "fallback_rules": "Render safe text; do not execute unsupported actions."
+    },
+    {
+      "type": "divider",
+      "description": "Visual separator.",
+      "stateful": false,
+      "schema_ref": "schemas/core/divider-1.0.json",
+      "status": "experimental",
+      "surfaces": {
+        "default": "timeline",
+        "supports_user_pin": false,
+        "supports_focus_view": false
+      },
+      "version": "1.0",
+      "purpose": "Visual separator.",
+      "when_to_use": "Visual separator.",
+      "state_ownership": "none",
+      "fallback_rules": "Render safe text; do not execute unsupported actions."
+    },
+    {
+      "type": "key_value",
+      "description": "Structured key/value display.",
+      "stateful": false,
+      "schema_ref": "schemas/core/key-value-1.0.json",
+      "status": "experimental",
+      "surfaces": {
+        "default": "timeline",
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "version": "1.0",
+      "purpose": "Structured key/value display.",
+      "when_to_use": "Structured key/value display.",
+      "state_ownership": "none",
+      "fallback_rules": "Render safe text; do not execute unsupported actions."
+    },
+    {
+      "type": "actions",
+      "description": "Simple action buttons that publish auditable events.",
+      "stateful": false,
+      "schema_ref": "schemas/core/actions-1.0.json",
+      "status": "experimental",
+      "surfaces": {
+        "default": "timeline",
+        "supports_user_pin": false,
+        "supports_focus_view": false
+      },
+      "version": "1.0",
+      "purpose": "Simple action buttons that publish auditable events.",
+      "when_to_use": "Simple action buttons that publish auditable events.",
+      "state_ownership": "none",
+      "fallback_rules": "Render safe text; do not execute unsupported actions."
+    },
+    {
+      "type": "reference",
+      "description": "Reference to another event, message, or entity.",
+      "stateful": false,
+      "schema_ref": "schemas/core/reference-1.0.json",
+      "status": "experimental",
+      "surfaces": {
+        "default": "timeline",
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "version": "1.0",
+      "purpose": "Reference to another event, message, or entity.",
+      "when_to_use": "Reference to another event, message, or entity.",
+      "state_ownership": "none",
+      "fallback_rules": "Render safe text; do not execute unsupported actions."
+    }
+  ],
+  "plugins": [
+    {
+      "name": "approval",
+      "version": "1.0",
+      "description": "Human-in-the-loop approvals with approve/reject/cancel commands.",
+      "stateful": true,
+      "blocks": [
+        {
+          "type": "approval",
+          "schema_ref": "schemas/plugins/approval-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message",
+        "command": "m.plugin.command",
+        "state_updated": "m.plugin.state.updated",
+        "instance_created": "m.plugin.instance.created"
+      },
+      "commands": [
+        "approve",
+        "reject",
+        "cancel"
+      ],
+      "instance_creation": {
+        "mode": "plugin_service_required",
+        "operation": "ApprovalPlugin.create"
+      },
+      "fallback_required": true,
+      "status": "experimental",
+      "surfaces": {
+        "default": "pinned",
+        "auto_pin_when": [
+          "pending"
+        ],
+        "auto_unpin_when": [
+          "approved",
+          "rejected",
+          "cancelled",
+          "expired"
+        ],
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "purpose": "Human-in-the-loop approvals with approve/reject/cancel commands.",
+      "when_to_use": "Human-in-the-loop approvals with approve/reject/cancel commands.",
+      "state_ownership": "plugin",
+      "fallback_rules": "Render fallback_markdown; never infer unsupported commands."
+    },
+    {
+      "name": "workflow",
+      "version": "1.0",
+      "status": "experimental",
+      "description": "Track an existing RiteSmith/Trama execution; never fabricate progress.",
+      "purpose": "Track an existing RiteSmith/Trama execution; never fabricate progress.",
+      "when_to_use": "Track an existing RiteSmith/Trama execution; never fabricate progress.",
+      "stateful": true,
+      "state_ownership": "plugin",
+      "blocks": [
+        {
+          "type": "workflow",
+          "schema_ref": "schemas/plugins/workflow-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message",
+        "command": "m.plugin.command",
+        "state_updated": "m.plugin.state.updated",
+        "instance_created": "m.plugin.instance.created"
+      },
+      "commands": [
+        "refresh"
+      ],
+      "instance_creation": {
+        "mode": "plugin_service_required",
+        "operation": "workflow.create"
+      },
+      "fallback_required": true,
+      "fallback_rules": "Render fallback_markdown; never infer commands.",
+      "surfaces": {
+        "default": "pinned",
+        "auto_pin_when": [
+          "created",
+          "running",
+          "waiting",
+          "failed"
+        ],
+        "auto_unpin_when": [
+          "completed",
+          "cancelled"
+        ],
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      }
+    },
+    {
+      "name": "checklist",
+      "version": "1.0",
+      "status": "experimental",
+      "description": "Shared checklist state with item-level commands.",
+      "stateful": true,
+      "blocks": [
+        {
+          "type": "checklist",
+          "schema_ref": "schemas/plugins/checklist-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message",
+        "command": "m.plugin.command",
+        "state_updated": "m.plugin.state.updated",
+        "instance_created": "m.plugin.instance.created"
+      },
+      "commands": [
+        "check_item",
+        "uncheck_item",
+        "add_item",
+        "remove_item",
+        "reorder_item",
+        "complete",
+        "archive",
+        "cancel"
+      ],
+      "instance_creation": {
+        "mode": "plugin_service_required",
+        "operation": "ChecklistPlugin.create"
+      },
+      "fallback_required": true,
+      "surfaces": {
+        "default": "pinned",
+        "auto_pin_when": [
+          "open"
+        ],
+        "auto_unpin_when": [
+          "completed",
+          "archived",
+          "cancelled"
+        ],
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "purpose": "Shared checklist state with item-level commands.",
+      "when_to_use": "Shared checklist state with item-level commands.",
+      "state_ownership": "plugin",
+      "fallback_rules": "Render fallback_markdown; never infer unsupported commands."
+    },
+    {
+      "name": "poll",
+      "version": "1.0",
+      "status": "experimental",
+      "description": "Lightweight voting and choice selection.",
+      "stateful": true,
+      "blocks": [
+        {
+          "type": "poll",
+          "schema_ref": "schemas/plugins/poll-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message",
+        "command": "m.plugin.command",
+        "state_updated": "m.plugin.state.updated",
+        "instance_created": "m.plugin.instance.created"
+      },
+      "commands": [
+        "vote",
+        "change_vote",
+        "close",
+        "cancel"
+      ],
+      "instance_creation": {
+        "mode": "plugin_service_required",
+        "operation": "PollPlugin.create"
+      },
+      "fallback_required": true,
+      "surfaces": {
+        "default": "pinned",
+        "auto_pin_when": [
+          "open"
+        ],
+        "auto_unpin_when": [
+          "closed",
+          "cancelled"
+        ],
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "purpose": "Lightweight voting and choice selection.",
+      "when_to_use": "Lightweight voting and choice selection.",
+      "state_ownership": "plugin",
+      "fallback_rules": "Render fallback_markdown; never infer unsupported commands."
+    },
+    {
+      "name": "plan",
+      "version": "1.0",
+      "status": "future",
+      "description": "Agent-generated execution plan with user-visible steps.",
+      "stateful": true,
+      "blocks": [
+        {
+          "type": "plan",
+          "schema_ref": "schemas/plugins/plan-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message",
+        "command": "m.plugin.command",
+        "state_updated": "m.plugin.state.updated",
+        "instance_created": "m.plugin.instance.created"
+      },
+      "commands": [
+        "approve",
+        "reject",
+        "modify",
+        "start",
+        "cancel"
+      ],
+      "instance_creation": {
+        "mode": "plugin_service_required",
+        "operation": "PlanPlugin.create"
+      },
+      "fallback_required": true,
+      "surfaces": {
+        "default": "pinned",
+        "auto_pin_when": [
+          "proposed",
+          "approved",
+          "running"
+        ],
+        "auto_unpin_when": [
+          "completed",
+          "cancelled",
+          "rejected"
+        ],
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "purpose": "Agent-generated execution plan with user-visible steps.",
+      "when_to_use": "Agent-generated execution plan with user-visible steps.",
+      "state_ownership": "plugin",
+      "fallback_rules": "Render fallback_markdown; never infer unsupported commands."
+    },
+    {
+      "name": "timeline",
+      "version": "1.0",
+      "status": "future",
+      "description": "Structured timeline of related events.",
+      "stateful": false,
+      "blocks": [
+        {
+          "type": "timeline",
+          "schema_ref": "schemas/plugins/timeline-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message"
+      },
+      "commands": [],
+      "instance_creation": {
+        "mode": "direct_block_allowed"
+      },
+      "fallback_required": true,
+      "surfaces": {
+        "default": "timeline",
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "purpose": "Structured timeline of related events.",
+      "when_to_use": "Structured timeline of related events.",
+      "state_ownership": "plugin",
+      "fallback_rules": "Render fallback_markdown; never infer unsupported commands."
+    },
+    {
+      "name": "table",
+      "version": "1.0",
+      "status": "future",
+      "description": "Structured tabular view, optionally interactive later.",
+      "stateful": false,
+      "blocks": [
+        {
+          "type": "table",
+          "schema_ref": "schemas/plugins/table-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message"
+      },
+      "commands": [],
+      "instance_creation": {
+        "mode": "direct_block_allowed"
+      },
+      "fallback_required": true,
+      "surfaces": {
+        "default": "timeline",
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "purpose": "Structured tabular view, optionally interactive later.",
+      "when_to_use": "Structured tabular view, optionally interactive later.",
+      "state_ownership": "plugin",
+      "fallback_rules": "Render fallback_markdown; never infer unsupported commands."
+    },
+    {
+      "name": "chart",
+      "version": "1.0",
+      "status": "future",
+      "description": "Metric and chart visualization.",
+      "stateful": false,
+      "blocks": [
+        {
+          "type": "chart",
+          "schema_ref": "schemas/plugins/chart-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message"
+      },
+      "commands": [],
+      "instance_creation": {
+        "mode": "direct_block_allowed"
+      },
+      "fallback_required": true,
+      "surfaces": {
+        "default": "timeline",
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "purpose": "Metric and chart visualization.",
+      "when_to_use": "Metric and chart visualization.",
+      "state_ownership": "plugin",
+      "fallback_rules": "Render fallback_markdown; never infer unsupported commands."
+    },
+    {
+      "name": "log_stream",
+      "version": "1.0",
+      "status": "future",
+      "description": "Log or trace viewer for executions and diagnostics.",
+      "stateful": true,
+      "blocks": [
+        {
+          "type": "log_stream",
+          "schema_ref": "schemas/plugins/log-stream-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message",
+        "command": "m.plugin.command",
+        "state_updated": "m.plugin.state.updated"
+      },
+      "commands": [
+        "load_more",
+        "filter",
+        "open_trace"
+      ],
+      "instance_creation": {
+        "mode": "plugin_service_required",
+        "operation": "LogStreamPlugin.create"
+      },
+      "fallback_required": true,
+      "surfaces": {
+        "default": "panel",
+        "auto_pin_when": [
+          "open",
+          "failed"
+        ],
+        "auto_unpin_when": [
+          "complete"
+        ],
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "purpose": "Log or trace viewer for executions and diagnostics.",
+      "when_to_use": "Log or trace viewer for executions and diagnostics.",
+      "state_ownership": "plugin",
+      "fallback_rules": "Render fallback_markdown; never infer unsupported commands."
+    },
+    {
+      "name": "document_collab",
+      "version": "1.0",
+      "status": "future",
+      "description": "Lightweight collaborative document/card state.",
+      "stateful": true,
+      "blocks": [
+        {
+          "type": "document_collab",
+          "schema_ref": "schemas/plugins/document-collab-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message",
+        "command": "m.plugin.command",
+        "state_updated": "m.plugin.state.updated"
+      },
+      "commands": [
+        "edit",
+        "save",
+        "comment",
+        "resolve_comment",
+        "archive"
+      ],
+      "instance_creation": {
+        "mode": "plugin_service_required",
+        "operation": "DocumentCollabPlugin.create"
+      },
+      "fallback_required": true,
+      "surfaces": {
+        "default": "timeline",
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "purpose": "Lightweight collaborative document/card state.",
+      "when_to_use": "Lightweight collaborative document/card state.",
+      "state_ownership": "plugin",
+      "fallback_rules": "Render fallback_markdown; never infer unsupported commands."
+    },
+    {
+      "name": "integration_preview",
+      "version": "1.0",
+      "status": "future",
+      "description": "Structured preview for external systems.",
+      "stateful": false,
+      "blocks": [
+        {
+          "type": "integration_preview",
+          "schema_ref": "schemas/plugins/integration-preview-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message"
+      },
+      "commands": [
+        "open",
+        "refresh"
+      ],
+      "instance_creation": {
+        "mode": "direct_block_allowed"
+      },
+      "fallback_required": true,
+      "surfaces": {
+        "default": "timeline",
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "purpose": "Structured preview for external systems.",
+      "when_to_use": "Structured preview for external systems.",
+      "state_ownership": "plugin",
+      "fallback_rules": "Render fallback_markdown; never infer unsupported commands."
+    },
+    {
+      "name": "memory_card",
+      "version": "1.0",
+      "status": "future",
+      "description": "Human-visible view of agent memory/context.",
+      "stateful": true,
+      "blocks": [
+        {
+          "type": "memory_card",
+          "schema_ref": "schemas/plugins/memory-card-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message",
+        "command": "m.plugin.command",
+        "state_updated": "m.plugin.state.updated"
+      },
+      "commands": [
+        "confirm",
+        "edit",
+        "delete",
+        "reject"
+      ],
+      "instance_creation": {
+        "mode": "plugin_service_required",
+        "operation": "MemoryCardPlugin.create"
+      },
+      "fallback_required": true,
+      "surfaces": {
+        "default": "timeline",
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "purpose": "Human-visible view of agent memory/context.",
+      "when_to_use": "Human-visible view of agent memory/context.",
+      "state_ownership": "plugin",
+      "fallback_rules": "Render fallback_markdown; never infer unsupported commands."
+    },
+    {
+      "name": "webhook_trigger",
+      "version": "1.0",
+      "status": "future",
+      "description": "Represents an external callback/waiting state.",
+      "stateful": true,
+      "blocks": [
+        {
+          "type": "webhook_trigger",
+          "schema_ref": "schemas/plugins/webhook-trigger-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message",
+        "command": "m.plugin.command",
+        "state_updated": "m.plugin.state.updated"
+      },
+      "commands": [
+        "cancel",
+        "retry",
+        "open_details"
+      ],
+      "instance_creation": {
+        "mode": "plugin_service_required",
+        "operation": "WebhookTriggerPlugin.create"
+      },
+      "fallback_required": true,
+      "surfaces": {
+        "default": "pinned",
+        "auto_pin_when": [
+          "waiting"
+        ],
+        "auto_unpin_when": [
+          "received",
+          "expired",
+          "cancelled",
+          "failed"
+        ],
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      },
+      "purpose": "Represents an external callback/waiting state.",
+      "when_to_use": "Represents an external callback/waiting state.",
+      "state_ownership": "plugin",
+      "fallback_rules": "Render fallback_markdown; never infer unsupported commands."
+    },
+    {
+      "name": "form_stateful",
+      "version": "1.0",
+      "status": "experimental",
+      "description": "Collect validated data for the agent; submission does not authorize an action.",
+      "purpose": "Collect validated data for the agent; submission does not authorize an action.",
+      "when_to_use": "Collect validated data for the agent; submission does not authorize an action.",
+      "stateful": true,
+      "state_ownership": "plugin",
+      "blocks": [
+        {
+          "type": "form_stateful",
+          "schema_ref": "schemas/plugins/form-stateful-block-1.0.json"
+        }
+      ],
+      "events": {
+        "message": "m.ui.message",
+        "command": "m.plugin.command",
+        "state_updated": "m.plugin.state.updated",
+        "instance_created": "m.plugin.instance.created"
+      },
+      "commands": [
+        "save",
+        "submit",
+        "cancel"
+      ],
+      "instance_creation": {
+        "mode": "plugin_service_required",
+        "operation": "form_stateful.create"
+      },
+      "fallback_required": true,
+      "fallback_rules": "Render fallback_markdown; never infer commands.",
+      "surfaces": {
+        "default": "pinned",
+        "auto_pin_when": [
+          "draft",
+          "invalid"
+        ],
+        "auto_unpin_when": [
+          "submitted",
+          "cancelled"
+        ],
+        "supports_user_pin": true,
+        "supports_focus_view": true
+      }
+    },
+    {
+      "name": "agent_status",
+      "version": "1.0",
+      "description": "Progresso real do trabalho do agente LLM, produzido pelo runtime.",
+      "purpose": "Acompanhar cada pedido do agente LLM.",
+      "when_to_use": "Criado automaticamente pelo conector; n\u00e3o \u00e9 uma ferramenta do modelo.",
+      "state_ownership": "plugin",
+      "status": "experimental",
+      "commands": [],
+      "blocks": [
+        {
+          "type": "plugin",
+          "schema_ref": "schemas/plugins/agent-status-block-1.0.json"
+        }
+      ],
+      "surfaces": {
+        "default": "pinned",
+        "supports_user_pin": true,
+        "supports_focus_view": true,
+        "auto_pin_when": [
+          "running",
+          "waiting_user"
+        ],
+        "auto_unpin_when": [
+          "completed",
+          "failed",
+          "interrupted"
+        ]
+      },
+      "fallback_rules": "Mostrar \u00faltimo estado conhecido em Markdown."
+    }
+  ]
+}

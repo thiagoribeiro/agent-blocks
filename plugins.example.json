@@ -1,0 +1,37 @@
+[
+  {
+    "name": "approval",
+    "url": "http://approval-plugin:4010",
+    "token": "REPLACE_WITH_APPROVAL_TOKEN"
+  },
+  {
+    "name": "workflow",
+    "url": "http://workflow-plugin:4010",
+    "token": "REPLACE_WITH_WORKFLOW_TOKEN"
+  },
+  {
+    "name": "form_stateful",
+    "url": "http://form-plugin:4010",
+    "token": "REPLACE_WITH_FORM_TOKEN"
+  },
+  {
+    "name": "checklist",
+    "url": "http://checklist-plugin:4010",
+    "token": "REPLACE_WITH_CHECKLIST_TOKEN"
+  },
+  {
+    "name": "poll",
+    "url": "http://poll-plugin:4010",
+    "token": "REPLACE_WITH_POLL_TOKEN"
+  },
+  {
+    "name": "agent_status",
+    "url": "http://brian-agent-status:4010",
+    "token": "REPLACE_WITH_AGENT_STATUS_TOKEN"
+  },
+  {
+    "name": "monthly_bills",
+    "url": "http://brian-monthly-bills:4010",
+    "token": "REPLACE_WITH_MONTHLY_BILLS_TOKEN"
+  }
+]

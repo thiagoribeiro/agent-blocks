@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/thiagoribeiro/brian/main/schemas/events/ui-message-1.0.json",
+  "title": "BRIAN UI Message Event Content",
+  "type": "object",
+  "required": [
+    "schema",
+    "version",
+    "body"
+  ],
+  "properties": {
+    "schema": {
+      "const": "brian.message"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "body": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "../core/markdown-1.0.json"
+          },
+          {
+            "$ref": "../core/notice-1.0.json"
+          },
+          {
+            "$ref": "../core/image-1.0.json"
+          },
+          {
+            "$ref": "../core/audio-1.0.json"
+          },
+          {
+            "$ref": "../core/file-1.0.json"
+          },
+          {
+            "$ref": "../core/divider-1.0.json"
+          },
+          {
+            "$ref": "../core/key-value-1.0.json"
+          },
+          {
+            "$ref": "../core/actions-1.0.json"
+          },
+          {
+            "$ref": "../core/reference-1.0.json"
+          },
+          {
+            "$ref": "../plugins/plugin-block-1.0.json"
+          }
+        ]
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

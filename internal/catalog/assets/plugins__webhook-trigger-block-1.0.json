@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Webhook trigger plugin view",
+  "type": "object",
+  "required": [
+    "title",
+    "status"
+  ],
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "waiting",
+        "received",
+        "expired",
+        "cancelled",
+        "failed"
+      ]
+    },
+    "callback_id": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

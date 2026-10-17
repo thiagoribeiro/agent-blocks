@@ -1,0 +1,76 @@
+# Independent plugin services on the existing private network.
+# Never declares or changes the Nimlet or Trama services.
+x-plugin: &plugin
+  build:
+    context: ..
+    dockerfile: Plugin.Dockerfile
+  image: brian-plugin:local
+  restart: unless-stopped
+  networks: [brian]
+  environment: &plugin-env
+    PLUGIN_DB_DSN: ${BRIAN_PLUGIN_DB_DSN:?dedicated plugin database required}
+    AGENT_BLOCKS_URL: http://agent-blocks:4000
+    TRAMA_URL: ${TRAMA_URL:?existing Trama URL required}
+    NIMLET_URL: ${NIMLET_URL:?existing Nimlet URL required}
+    NIMLET_CONSUMER_TOKEN: ${NIMLET_PLUGIN_CONSUMER_TOKEN:?normal service session required}
+    BRIAN_DELEGATING_AGENT_IDS: ${BRIAN_DELEGATING_AGENT_IDS:-}
+    PLUGIN_START_CURSOR: ${PLUGIN_START_CURSOR:-0}
+    RITESMITH_URL: ${RITESMITH_URL:?existing RiteSmith URL required}
+services:
+  agent-blocks:
+    build: { context: .., dockerfile: Dockerfile }
+    restart: unless-stopped
+    networks: [brian]
+    environment:
+      NIMLET_URL: ${NIMLET_URL:?required}
+      HS_TOKEN: ${HS_TOKEN:?existing appservice token required}
+      AS_TOKEN: ${AS_TOKEN:?existing appservice token required}
+      AGENT_BLOCKS_INTERNAL_TOKEN: ${AGENT_BLOCKS_INTERNAL_TOKEN:?required}
+      PLUGINS_FILE: /etc/brian/plugins.json
+    volumes: [./plugins.json:/etc/brian/plugins.json:ro]
+  brian-approval:
+    <<: *plugin
+    environment:
+      <<: *plugin-env
+      BRIAN_PLUGIN: approval
+      PLUGIN_TOKEN: ${BRIAN_APPROVAL_TOKEN:?required}
+      PLUGIN_PUBLIC_URL: http://brian-approval:4010
+  brian-workflow:
+    <<: *plugin
+    environment:
+      <<: *plugin-env
+      BRIAN_PLUGIN: workflow
+      PLUGIN_TOKEN: ${BRIAN_WORKFLOW_TOKEN:?required}
+      PLUGIN_PUBLIC_URL: http://brian-workflow:4010
+  brian-form-stateful:
+    <<: *plugin
+    environment:
+      <<: *plugin-env
+      BRIAN_PLUGIN: form_stateful
+      PLUGIN_TOKEN: ${BRIAN_FORM_STATEFUL_TOKEN:?required}
+      PLUGIN_PUBLIC_URL: http://brian-form-stateful:4010
+  brian-checklist:
+    <<: *plugin
+    environment:
+      <<: *plugin-env
+      BRIAN_PLUGIN: checklist
+      PLUGIN_TOKEN: ${BRIAN_CHECKLIST_TOKEN:?required}
+      PLUGIN_PUBLIC_URL: http://brian-checklist:4010
+  brian-poll:
+    <<: *plugin
+    environment:
+      <<: *plugin-env
+      BRIAN_PLUGIN: poll
+      PLUGIN_TOKEN: ${BRIAN_POLL_TOKEN:?required}
+      PLUGIN_PUBLIC_URL: http://brian-poll:4010
+  brian-agent-status:
+    <<: *plugin
+    environment:
+      <<: *plugin-env
+      BRIAN_PLUGIN: agent_status
+      PLUGIN_TOKEN: ${BRIAN_AGENT_STATUS_TOKEN:?required}
+      PLUGIN_PUBLIC_URL: http://brian-agent-status:4010
+networks:
+  brian:
+    external: true
+    name: ${BRIAN_NETWORK:?existing private network required}

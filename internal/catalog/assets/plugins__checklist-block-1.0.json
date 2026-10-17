@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Checklist plugin view",
+  "type": "object",
+  "required": [
+    "title",
+    "status",
+    "items"
+  ],
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "open",
+        "completed",
+        "archived",
+        "cancelled"
+      ]
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "label",
+          "checked"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "checked": {
+            "type": "boolean"
+          },
+          "assignee": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": true
+      }
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "owner_id": {
+      "type": "string"
+    },
+    "resolved_by": {
+      "type": "string"
+    },
+    "resolved_at": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": true
+}

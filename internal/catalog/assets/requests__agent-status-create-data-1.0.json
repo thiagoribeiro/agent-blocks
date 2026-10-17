@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "required": [
+    "request_id",
+    "started_at"
+  ],
+  "properties": {
+    "request_id": {
+      "type": "string"
+    },
+    "started_at": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}
