@@ -22,6 +22,7 @@ type Runtime struct {
 	SharingEnabled                                                              bool
 	Store                                                                       *Store
 	Wake                                                                        chan struct{}
+	Admissions                                                                  chan struct{}
 	Client                                                                      *http.Client
 	Token, PublicURL, RouterURL, TramaURL, NimletURL, NimletToken, RiteSmithURL string
 	DelegatingAgents                                                            map[string]bool
@@ -67,62 +68,12 @@ func (r *Runtime) ResultDefinition(id string) map[string]any {
 		}
 		return n
 	}
+	operation := strings.TrimRight(r.PublicURL, "/") + "/operations/" + url.PathEscape(id)
 	return map[string]any{"name": "brian-" + r.Store.Name + "-result", "version": "1.0", "failureHandling": map[string]any{"type": "backoff", "maxAttempts": 8, "initialDelayMillis": 1000, "maxDelayMillis": 30000}, "entrypoint": "publish", "nodes": []any{
 		task("publish", strings.TrimRight(r.RouterURL, "/")+"/plugins/"+r.Store.Name+"/operations/"+url.PathEscape(id)+"/publish", "complete"),
-		task("complete", strings.TrimRight(r.PublicURL, "/")+"/operations/"+url.PathEscape(id)+"/complete", "")}}
-}
-func (r *Runtime) Recover(ctx context.Context) error {
-	if err := r.MaintainSharing(ctx); err != nil {
-		slog.Warn("sharing maintenance pending", "plugin", r.Store.Name, "error", err)
-	}
-	ids, err := r.Store.Pending(ctx)
-	if err != nil {
-		return err
-	}
-	for _, id := range ids {
-		op, err := r.Store.Operation(ctx, id)
-		if err != nil {
-			return err
-		}
-		active := false
-		for _, execution := range op.Executions {
-			var wf map[string]any
-			code, e := r.call(ctx, "GET", r.TramaURL+"/workflows/"+url.PathEscape(execution), "", nil, &wf)
-			if e != nil {
-				return e
-			}
-			if code == 204 {
-				continue
-			}
-			switch str(wf, "status") {
-			case "SUCCEEDED":
-				if err = r.Store.Complete(ctx, id); err != nil {
-					return err
-				}
-				active = true
-			case "FAILED":
-			default:
-				active = true
-			}
-		}
-		if active {
-			continue
-		}
-		var resp struct {
-			ID string `json:"id"`
-		}
-		_, err = r.call(ctx, "POST", r.TramaURL+"/workflows/run", "", map[string]any{"definition": r.ResultDefinition(id), "payload": map[string]any{}}, &resp)
-		if err != nil {
-			return err
-		}
-		if resp.ID == "" {
-			return fmt.Errorf("missing Trama execution id")
-		}
-		if err = r.Store.Track(ctx, id, resp.ID); err != nil {
-			return err
-		}
-	}
-	return nil
+		task("complete", operation+"/complete", "")},
+		// Retries exhausted: the plugin requeues the operation with backoff.
+		"onFailureCallback": map[string]any{"url": operation + "/failed", "verb": "POST", "headers": token, "body": map[string]any{}}}
 }
 
 // expiryEvent is the synthetic command that resolves an expired approval.
@@ -326,12 +277,19 @@ func (r *Runtime) refreshWorkflow(ctx context.Context, i *protocol.Instance) err
 	}
 	return tx.Commit(ctx)
 }
+
+// Notify signals new work: admission picks up committed operations and the
+// maintenance loop handles sharing transfers.
 func (r *Runtime) Notify() {
 	select {
 	case r.Wake <- struct{}{}:
 	default:
 	}
+	r.NotifyAdmissions()
 }
+
+// Run is the maintenance loop: sync, history reconciliation, sharing and the
+// admission safety net. Clicks never wait for it; admission runs separately.
 func (r *Runtime) Run(ctx context.Context) {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
@@ -345,11 +303,14 @@ func (r *Runtime) Run(ctx context.Context) {
 			if err := r.Reconcile(cycle); err != nil {
 				slog.Warn("plugin reconciliation failed", "plugin", r.Store.Name, "error", err)
 			}
+			r.Sweep(cycle)
 		}
-		if err := r.Recover(cycle); err != nil {
-			slog.Warn("plugin admission failed", "plugin", r.Store.Name, "error", err)
+		if err := r.MaintainSharing(cycle); err != nil {
+			slog.Warn("sharing maintenance pending", "plugin", r.Store.Name, "error", err)
 		}
 		cancel()
+		// Sync, reconciliation and sharing may have committed operations.
+		r.NotifyAdmissions()
 		select {
 		case <-ctx.Done():
 			return

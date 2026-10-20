@@ -75,6 +75,7 @@ Never commit tokens or the generated file.
 | `AGENT_BLOCKS_URL`, `TRAMA_URL` | Router and Trama URLs. |
 | `RITESMITH_URL` | Required by `workflow` for RiteSmith executions. |
 | `NIMLET_URL`, `NIMLET_CONSUMER_TOKEN` | Normal (non-AppService) session of a service user that is a member of the tracked rooms. Used for `/sync`, history replay and delegation checks. |
+| `PLUGIN_ADMISSION_WORKERS` | Concurrent workflow admissions (default `1`). |
 | `BRIAN_DELEGATING_AGENT_IDS` | Comma-separated user IDs of agents allowed to delegate commands (empty by default). |
 | `BRIAN_PUBLISHER_IDS` | Trusted publisher user IDs (status and sharing). |
 | `PLUGIN_START_CURSOR` | Optional opaque sync cursor for the first start; see below. |
@@ -104,19 +105,32 @@ Every route except `/health` requires a token.
 | `GET /plugins/{plugin}/operations/{id}` | internal | Authoritative journal entry. |
 | `POST /plugins/{plugin}/operations/{id}/publish` | per-operation token | Workflow step. Fetches the result from the plugin and never accepts caller-supplied views. |
 
+Plugin services also expose `POST /operations/{id}/complete` and `POST /operations/{id}/failed` for Trama, with the same per-operation token.
+
 The router only acknowledges a command after the plugin has persisted the transition and
 its result. Every publication uses a stable transaction ID. A command can arrive through
 the webhook, sync or replay, and the event ID deduplicates all three.
 
 ### Result publication
 
-Each operation runs a two-task Trama workflow: publish the result, then mark the operation
-complete. The workflow definition carries an operation token derived as
-`HMAC-SHA256(PLUGIN_TOKEN, "operation:" + id)`, which only authorizes those two calls for
-that operation, so the plugin token is never stored in Trama. For workflows created by
-older versions, the router and plugin also accept the plugin token. Workflows whose retries
-are exhausted are re-admitted by the plugin's recovery cycle. Only the eight most recent
-execution IDs are retained.
+Each operation is published by a Trama workflow with two retried tasks: publish the
+result, then mark the operation complete. The workflow definition carries an operation
+token derived as `HMAC-SHA256(PLUGIN_TOKEN, "operation:" + id)`, which only authorizes
+those calls for that operation, so the plugin token is never stored in Trama. For
+workflows created by older versions, the router and plugin also accept the plugin token.
+
+- **Admission.** The operations table is the queue. Committing an operation wakes a
+  dedicated worker (`PLUGIN_ADMISSION_WORKERS`, default 1). The worker claims the
+  operation (`FOR UPDATE SKIP LOCKED`) and starts its workflow right away. A click never
+  waits for sync, reconciliation or Trama status polls.
+- **Failure.** When Trama exhausts the workflow's retries, its `onFailureCallback` calls
+  `POST /operations/{id}/failed`. The operation goes back to the queue with backoff
+  (1 s doubling up to 5 min) and retries until it publishes.
+- **Safety net.** Every 30 s, the maintenance loop asks Trama about operations admitted
+  more than 2 minutes ago that never completed (a lost callback or a restart). It
+  completes the ones that succeeded and requeues the rest.
+- **Logs.** Each completion logs `operation published` with `admit_ms` (commit to
+  admission) and `total_ms`.
 
 ## Delegated commands
 

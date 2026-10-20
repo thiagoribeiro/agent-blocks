@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -72,7 +73,7 @@ func main() {
 		slog.Error("cursor initialization failed")
 		os.Exit(1)
 	}
-	runtime := &plugin.Runtime{Store: store, Wake: make(chan struct{}, 1), Client: &http.Client{Timeout: 20 * time.Second}, Token: token, PublicURL: public, RouterURL: router, TramaURL: trama, NimletURL: httpx.Env("NIMLET_URL", "http://nimlet:8080"), NimletToken: os.Getenv("NIMLET_CONSUMER_TOKEN"), RiteSmithURL: os.Getenv("RITESMITH_URL")}
+	runtime := &plugin.Runtime{Store: store, Wake: make(chan struct{}, 1), Admissions: make(chan struct{}, 1), Client: &http.Client{Timeout: 20 * time.Second}, Token: token, PublicURL: public, RouterURL: router, TramaURL: trama, NimletURL: httpx.Env("NIMLET_URL", "http://nimlet:8080"), NimletToken: os.Getenv("NIMLET_CONSUMER_TOKEN"), RiteSmithURL: os.Getenv("RITESMITH_URL")}
 	if runtime.NimletToken == "" {
 		slog.Warn("NIMLET_CONSUMER_TOKEN not set: sync, history replay and delegated commands are disabled")
 	}
@@ -106,6 +107,12 @@ func main() {
 	if name == "agent_status" {
 		go runtime.RunStatus(ctx)
 	} else {
+		workers, err := strconv.Atoi(httpx.Env("PLUGIN_ADMISSION_WORKERS", "1"))
+		if err != nil || workers < 1 {
+			slog.Error("PLUGIN_ADMISSION_WORKERS must be a positive integer")
+			os.Exit(1)
+		}
+		runtime.RunAdmissions(ctx, workers)
 		go runtime.Run(ctx)
 	}
 	r := chi.NewRouter()
@@ -117,15 +124,37 @@ func main() {
 		}
 		httpx.WriteJSON(w, 200, map[string]string{"status": "ok"})
 	})
-	// Completion is called by the workflow engine with the per-operation token
-	// (or, for older executions, the plugin token).
+	// Completion and failure are called by the workflow engine with the
+	// per-operation token (or, for older executions, the plugin token).
+	operationAuth := func(r *http.Request, id string) bool {
+		return httpx.Authorized(r, token) || httpx.Authorized(r, protocol.OperationToken(token, id))
+	}
 	r.Post("/operations/{id}/complete", func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
-		if !httpx.Authorized(r, token) && !httpx.Authorized(r, protocol.OperationToken(token, id)) {
+		if !operationAuth(r, id) {
 			http.Error(w, "unauthorized", 401)
 			return
 		}
 		if err := store.Complete(r.Context(), id); err != nil {
+			failure(w, err)
+			return
+		}
+		if created, admitted, err := store.PublicationTimes(r.Context(), id); err == nil {
+			attrs := []any{"plugin", name, "operation", id, "total_ms", time.Since(created).Milliseconds()}
+			if admitted != nil {
+				attrs = append(attrs, "admit_ms", admitted.Sub(created).Milliseconds())
+			}
+			slog.Info("operation published", attrs...)
+		}
+		httpx.WriteJSON(w, 200, map[string]bool{"ok": true})
+	})
+	r.Post("/operations/{id}/failed", func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		if !operationAuth(r, id) {
+			http.Error(w, "unauthorized", 401)
+			return
+		}
+		if err := runtime.PublicationFailed(r.Context(), id); err != nil {
 			failure(w, err)
 			return
 		}
