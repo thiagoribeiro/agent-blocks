@@ -43,6 +43,9 @@ func Open(ctx context.Context, dsn, name string) (*Store, error) {
 	if err = s.migrate(ctx); err == nil {
 		err = s.migrateSharing(ctx)
 	}
+	if err == nil {
+		err = s.migrateAdmission(ctx)
+	}
 	if err != nil {
 		pool.Close()
 		return nil, err
