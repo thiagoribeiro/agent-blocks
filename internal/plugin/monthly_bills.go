@@ -49,8 +49,22 @@ func amount(v any) (int64, bool) {
 	return 0, false
 }
 
-// Periods are immutable snapshots of recurrence descriptions and due dates. Opening an
-// existing month never overwrites a user edit. The enclosing instance transaction serializes it.
+// The due date of a recurrence in a month: its day, or the month's last day when shorter.
+func billDueDate(month string, day int, loc *time.Location) (string, error) {
+	start, err := time.ParseInLocation("2006-01", month, loc)
+	if err != nil || day < 1 || day > 31 {
+		return "", ErrInvalid
+	}
+	if last := time.Date(start.Year(), start.Month()+1, 0, 0, 0, 0, 0, loc).Day(); day > last {
+		day = last
+	}
+	return fmt.Sprintf("%s-%02d", month, day), nil
+}
+
+// Periods are snapshots of recurrence descriptions and due dates, so past months and settled
+// entries keep their history; only pending entries of the current and later months follow a
+// recurrence edit (followRecurrence). Opening an existing month never overwrites a user edit.
+// The enclosing instance transaction serializes it.
 func materializeBills(s map[string]any, month string) error {
 	if !monthPattern.MatchString(month) {
 		return ErrInvalid
@@ -97,11 +111,6 @@ func materializeBills(s map[string]any, month string) error {
 	if err != nil {
 		return ErrInvalid
 	}
-	start, err := time.ParseInLocation("2006-01", month, loc)
-	if err != nil {
-		return ErrInvalid
-	}
-	last := time.Date(start.Year(), start.Month()+1, 0, 0, 0, 0, 0, loc).Day()
 	entries := map[string]any{}
 	keys := []string{}
 	for k := range periods {
@@ -116,14 +125,11 @@ func materializeBills(s map[string]any, month string) error {
 			continue
 		}
 		id := str(it, "id")
-		day := int(revision(map[string]any{"revision": it["due_day"]}))
-		if day < 1 || day > 31 {
-			return ErrInvalid
+		due, err := billDueDate(month, int(revision(map[string]any{"revision": it["due_day"]})), loc)
+		if err != nil {
+			return err
 		}
-		if day > last {
-			day = last
-		}
-		e := map[string]any{"item_id": id, "name": it["name"], "due_date": fmt.Sprintf("%s-%02d", month, day), "status": "pending", "suggested_amount_minor": nil, "confirmed_amount_minor": nil, "suggestion_source_period": nil}
+		e := map[string]any{"item_id": id, "name": it["name"], "due_date": due, "status": "pending", "suggested_amount_minor": nil, "confirmed_amount_minor": nil, "suggestion_source_period": nil}
 		for _, k := range keys {
 			prior, _ := periods[k].(map[string]any)
 			priorEntries, _ := prior["entries"].(map[string]any)
@@ -138,6 +144,36 @@ func materializeBills(s map[string]any, month string) error {
 	}
 	periods[month] = map[string]any{"month": month, "entries": entries}
 	s["selected_period"] = month
+	return nil
+}
+
+// A recurrence edit reaches the still pending entries of the current and later months.
+// Paid or cancelled entries and past months stay as they were. Entries get no
+// updated_at: that marks a person's amount edit, which stops amount suggestions.
+func followRecurrence(s map[string]any, it map[string]any, now time.Time) error {
+	loc, err := time.LoadLocation(str(s, "timezone"))
+	if err != nil {
+		return ErrInvalid
+	}
+	current := now.In(loc).Format("2006-01")
+	periods, _ := s["periods"].(map[string]any)
+	for month, raw := range periods {
+		if month < current {
+			continue
+		}
+		period, _ := raw.(map[string]any)
+		entries, _ := period["entries"].(map[string]any)
+		entry, ok := entries[str(it, "id")].(map[string]any)
+		if !ok || entry["status"] != "pending" {
+			continue
+		}
+		due, err := billDueDate(month, int(revision(map[string]any{"revision": it["due_day"]})), loc)
+		if err != nil {
+			return err
+		}
+		entry["name"] = it["name"]
+		entry["due_date"] = due
+	}
 	return nil
 }
 
@@ -200,7 +236,7 @@ func applyBills(s map[string]any, actor, command string, p map[string]any, now t
 				}
 				it["updated_by"] = actor
 				it["updated_at"] = now.UTC().Format(time.RFC3339Nano)
-				return nil
+				return followRecurrence(s, it, now)
 			}
 		}
 		return ErrInvalid
