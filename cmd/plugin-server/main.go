@@ -104,6 +104,16 @@ func main() {
 			runtime.DelegatingAgents[id] = true
 		}
 	}
+	runtime.Producers = map[string]bool{}
+	for _, id := range strings.Split(os.Getenv("BRIAN_EMAIL_TRIAGE_PRODUCER_IDS"), ",") {
+		if id = strings.TrimSpace(id); id != "" {
+			runtime.Producers[id] = true
+		}
+	}
+	if name == "email_triage" && len(runtime.Producers) == 0 {
+		slog.Error("BRIAN_EMAIL_TRIAGE_PRODUCER_IDS required for email_triage")
+		os.Exit(1)
+	}
 	if name == "agent_status" {
 		go runtime.RunStatus(ctx)
 	} else {
@@ -213,6 +223,19 @@ func main() {
 			httpx.WriteJSON(w, 200, map[string]bool{"ok": true})
 		})
 		r.Post("/instances/{id}/updates", func(w http.ResponseWriter, r *http.Request) {
+			if name == "email_triage" {
+				var update plugin.EmailUpdate
+				if !httpx.Decode(w, r, &update) {
+					return
+				}
+				instance, err := runtime.UpdateEmailTriage(r.Context(), chi.URLParam(r, "id"), update)
+				if err != nil {
+					failure(w, err)
+					return
+				}
+				httpx.WriteJSON(w, 200, instance)
+				return
+			}
 			var update plugin.StatusUpdate
 			if !httpx.Decode(w, r, &update) {
 				return

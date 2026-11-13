@@ -38,3 +38,18 @@ func monthlyBillsEntry() (map[string]any, error) {
 	}
 	return map[string]any{"name": "monthly_bills", "version": "1.0", "installed": true, "status": "experimental", "purpose": "Track monthly bills, suggested amounts and confirmed payments; never moves money.", "description": "Household bills", "commands": commands, "view_schema": view, "create_schema": create, "instance_creation": map[string]any{"mode": "plugin_service_required", "operation": "monthly_bills.create"}, "surfaces": map[string]any{"default": "pinned", "auto_pin_when": []any{"open"}, "auto_unpin_when": []any{"archived"}, "supports_user_pin": true, "supports_focus_view": true}, "fallback_required": true}, nil
 }
+
+// emailTriageEntry: a producer-owned surface. Only the producer creates it and
+// only the owner decides; there is no creation or command path for an LLM.
+func emailTriageEntry() (map[string]any, error) {
+	view, err := runtimeSchema("email-triage-view.json")
+	if err != nil {
+		return nil, err
+	}
+	create, err := runtimeSchema("email-triage-create.json")
+	if err != nil {
+		return nil, err
+	}
+	commands := []any{"mark_done", "not_important", "should_alert", "group_mine", "group_not_mine", "group_unsure", "undo_batch", "refresh"}
+	return map[string]any{"name": "email_triage", "version": "1.0", "installed": true, "status": "experimental", "purpose": "The owner's decisions about mailbox triage (important mail, wrong-recipient cleanup); the producer applies them. Never shows message bodies.", "description": "Email", "commands": commands, "delegable_commands": []any{}, "llm_access": "none", "view_schema": view, "create_schema": create, "instance_creation": map[string]any{"mode": "producer_only"}, "surfaces": map[string]any{"default": "pinned", "auto_pin_when": []any{"open"}, "supports_user_pin": true, "supports_focus_view": true}, "fallback_required": true}, nil
+}

@@ -26,3 +26,22 @@ func TestInstalledOnly(t *testing.T) {
 		}
 	}
 }
+
+func TestEmailTriageIsProducerOnlyAndClosedToTheLLM(t *testing.T) {
+	c, err := Runtime([]string{"email_triage"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ps := c["plugins"].([]any)
+	if len(ps) != 1 {
+		t.Fatalf("catalog has %d entries", len(ps))
+	}
+	p := ps[0].(map[string]any)
+	if p["name"] != "email_triage" || p["llm_access"] != "none" || len(p["delegable_commands"].([]any)) != 0 ||
+		p["instance_creation"].(map[string]any)["mode"] != "producer_only" || p["view_schema"] == nil || p["create_schema"] == nil {
+		t.Fatal(p)
+	}
+	if c, _ := Runtime([]string{"approval"}); len(c["plugins"].([]any)) != 1 {
+		t.Fatal("email_triage listed without being installed")
+	}
+}

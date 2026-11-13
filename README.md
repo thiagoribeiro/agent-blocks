@@ -25,9 +25,14 @@ blocks and send user interactions back as `m.plugin.command` events.
 - **room-admin** (`cmd/room-admin`) is an optional internal adapter that runs a fixed
   allowlist of `nimlet` admin CLI operations. Shared surfaces and membership checks use it.
 
-Plugins: `approval`, `workflow`, `form_stateful`, `checklist`, `poll`, `agent_status` and
-`monthly_bills` (experimental). `workflow` tracks real Trama/RiteSmith executions and only
-supports `refresh`.
+Plugins: `approval`, `workflow`, `form_stateful`, `checklist`, `poll`, `agent_status`,
+`monthly_bills` and `email_triage` (experimental). `workflow` tracks real Trama/RiteSmith
+executions and only supports `refresh`. `email_triage` is producer-owned: an allowlisted
+producer (`BRIAN_EMAIL_TRIAGE_PRODUCER_IDS`) publishes the view through
+`POST /plugins/email_triage/instances/{id}/updates`; the owner's commands (`mark_done`,
+`not_important`, `should_alert`, `group_mine`, `group_not_mine`, `group_unsure`,
+`undo_batch` with `confirmed`) are journaled as pending decisions the producer reports as
+`applied`/`failed`. None of them is delegable, and the view never carries message bodies.
 
 ## Quick start
 
