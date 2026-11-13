@@ -132,9 +132,14 @@ func TestPostgresBurstIsAdmittedOncePerOperationWithoutPolling(t *testing.T) {
 	if trama.gets.Load() != 0 {
 		t.Fatalf("admission polled Trama %d times", trama.gets.Load())
 	}
+	// Trama has the 10 calls; the last execution id may still be committing.
 	var tracked int
-	if err := r.Store.Pool.QueryRow(ctx, "SELECT count(*) FROM brian_poll.operations WHERE admitted_at IS NOT NULL AND jsonb_array_length(executions)=1").Scan(&tracked); err != nil || tracked != 10 {
-		t.Fatal("tracked", tracked, err)
+	waitFor(t, "10 tracked executions", 2*time.Second, func() bool {
+		err := r.Store.Pool.QueryRow(ctx, "SELECT count(*) FROM brian_poll.operations WHERE admitted_at IS NOT NULL AND jsonb_array_length(executions)=1").Scan(&tracked)
+		return err == nil && tracked == 10
+	})
+	if trama.total() != 10 {
+		t.Fatal("admitted more than once", trama.total())
 	}
 }
 
