@@ -244,8 +244,29 @@ func (s *Store) get(ctx context.Context, q rowQuery, id string, lock bool) (*pro
 	i.Fallback = Fallback(i.State)
 	return i, nil
 }
+
+// publishedContent drops the duplicate view of a state update. BRIAN requires
+// `state` in m.plugin.state.updated and makes `view` optional; every view here is
+// View(state), the same object, so sending both doubled each event (and Nimlet caps
+// a body at 64 KiB). Creation keeps both: there the schema requires both.
+func publishedContent(kind string, content map[string]any) map[string]any {
+	if kind != "m.plugin.state.updated" || content["state"] == nil || content["view"] == nil {
+		return content
+	}
+	if hash(content["view"]) != hash(content["state"]) {
+		return content // a view that differs from the state is information: keep it
+	}
+	out := make(map[string]any, len(content))
+	for k, v := range content {
+		if k != "view" {
+			out[k] = v
+		}
+	}
+	return out
+}
+
 func (s *Store) insertOp(ctx context.Context, tx pgx.Tx, id, inputHash, room, instance, kind string, content map[string]any) error {
-	b, _ := json.Marshal(content)
+	b, _ := json.Marshal(publishedContent(kind, content))
 	_, err := tx.Exec(ctx, fmt.Sprintf("INSERT INTO %s(id,input_hash,room_id,instance_id,event_type,content) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT DO NOTHING", s.table("operations")), id, inputHash, room, instance, kind, b)
 	return err
 }
