@@ -26,6 +26,8 @@ type Runtime struct {
 	Client                                                                      *http.Client
 	Token, PublicURL, RouterURL, TramaURL, NimletURL, NimletToken, RiteSmithURL string
 	DelegatingAgents                                                            map[string]bool
+	// Producers may replace a producer-owned view (email_triage); never users or LLMs.
+	Producers map[string]bool
 }
 
 func (r *Runtime) call(ctx context.Context, method, target, token string, body any, out any) (int, error) {

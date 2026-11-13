@@ -23,6 +23,8 @@ func TestStatusUpdatesRequireInternalAuthorityAndOwnPlugin(t *testing.T) {
 	h := newAppServiceHandler(Config{InternalToken: "runtime-secret"})
 	p := &fakePlugin{status: 200}
 	h.registry.handlers["agent_status"] = p
+	h.registry.handlers["email_triage"] = p
+	h.registry.handlers["monthly_bills"] = p
 	r := chi.NewRouter()
 	r.Post("/plugins/{plugin}/instances/{instance}/updates", h.statusUpdate)
 	for _, tc := range []struct {
@@ -32,6 +34,9 @@ func TestStatusUpdatesRequireInternalAuthorityAndOwnPlugin(t *testing.T) {
 		{"user-token", "agent_status", 401, 0},
 		{"runtime-secret", "workflow", 404, 0},
 		{"runtime-secret", "agent_status", 200, 1},
+		{"runtime-secret", "monthly_bills", 404, 1},
+		{"user-token", "email_triage", 401, 1},
+		{"runtime-secret", "email_triage", 200, 2},
 	} {
 		q := httptest.NewRequest("POST", "/plugins/"+tc.plugin+"/instances/card/updates", bytes.NewBufferString(`{"room_id":"room","owner_id":"owner","producer_id":"agent","state":{}}`))
 		q.Header.Set("Authorization", "Bearer "+tc.token)

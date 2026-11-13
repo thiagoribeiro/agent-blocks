@@ -51,6 +51,8 @@ func Initial(name string, r protocol.Create) (map[string]any, error) {
 		s["acl"] = map[string]any{r.OwnerID: "owner"}
 	case "agent_status":
 		return initialStatus(r)
+	case "email_triage":
+		return initialEmailTriage(r)
 	case "approval":
 		expiry, err := time.Parse(time.RFC3339, r.ExpiresAt)
 		if err != nil || !expiry.After(time.Now()) || expiry.After(time.Now().Add(24*time.Hour)) {
@@ -171,6 +173,10 @@ func Apply(name string, old map[string]any, owner, actor, command string, payloa
 		}
 	case "agent_status":
 		return nil, ErrForbidden
+	case "email_triage":
+		if err := applyEmailTriage(s, owner, actor, command, payload, now); err != nil {
+			return nil, err
+		}
 	case "approval":
 		if err := applyApproval(s, owner, actor, command, now); err != nil {
 			return nil, err
@@ -468,6 +474,10 @@ func applyForm(s map[string]any, owner, actor, command string, payload map[strin
 
 func View(s map[string]any) map[string]any { return clone(s) }
 func Fallback(s map[string]any) string {
+	if _, ok := s["producer_sequence"]; ok { // email_triage: counts only, never mail content
+		view, _ := s["view"].(map[string]any)
+		return fmt.Sprintf("**%s** — %d importante(s) em aberto", str(s, "title"), len(array(view, "important")))
+	}
 	if str(s, "current_status") != "" {
 		return fmt.Sprintf("**%s** — %s", str(s, "title"), str(s, "current_status"))
 	}

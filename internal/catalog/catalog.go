@@ -70,6 +70,13 @@ func Runtime(installed []string) (map[string]any, error) {
 		}
 		plugins = append(plugins, entry)
 	}
+	if allowed["email_triage"] {
+		entry, e := emailTriageEntry()
+		if e != nil {
+			return nil, e
+		}
+		plugins = append(plugins, entry)
+	}
 	c["plugins"] = plugins
 	message, err := Schema("events/ui-message-1.0.json")
 	if err != nil {

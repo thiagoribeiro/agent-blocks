@@ -191,17 +191,18 @@ func (h *appServiceHandler) publish(w http.ResponseWriter, r *http.Request) {
 	httpx.WriteJSON(w, 200, response)
 }
 
-// Progress updates are internal and can only target the runtime-owned status plugin.
+// Producer updates are internal and can only target producer-owned plugins.
 func (h *appServiceHandler) statusUpdate(w http.ResponseWriter, r *http.Request) {
 	if !httpx.Authorized(r, h.cfg.InternalToken) {
 		http.Error(w, "unauthorized", 401)
 		return
 	}
-	if chi.URLParam(r, "plugin") != "agent_status" {
+	name := chi.URLParam(r, "plugin")
+	if name != "agent_status" && name != "email_triage" {
 		http.Error(w, "unsupported", 404)
 		return
 	}
-	p, ok := h.registry.Get("agent_status")
+	p, ok := h.registry.Get(name)
 	if !ok {
 		http.Error(w, "unavailable", 404)
 		return
